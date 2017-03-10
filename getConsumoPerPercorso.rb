@@ -6,12 +6,7 @@ destinazione = 'via venzia 17/c 38050 tenna'
 distanza = getDistanza(partenza,destinazione)
 
 
-begin
-  consumi = YAML.load_file('consumi.yaml')
-rescue
-  getConsumo
-end
-consumi = YAML.load_file('consumi.yaml')
+consumi = getConsumo
 
 consumo = (distanza["value"]/1000) / consumi["rolls-royce"]["benzina"]["rolls-royce phantom drophead"][6.8][0]
 
