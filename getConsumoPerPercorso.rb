@@ -1,13 +1,33 @@
 require_relative 'getConsumo'
 require_relative 'getDistance'
+require_relative 'findCar'
 
-partenza = 'via san pietro 3 38057'
-destinazione = 'via venzia 17/c 38050 tenna'
-distanza = getDistanza(partenza,destinazione)
+macchina = ARGV[ 0 .. ARGV.index("/") - 1 ].join(" ")
+secondoElemento = nil
+partenza = ""
+ARGV.each do |elemento|
+  break if secondoElemento == true and elemento == "/"
+  partenza += " " + elemento if secondoElemento == true
+  secondoElemento = true if elemento == "/"
+end
 
-
-consumi = getConsumo
-
-consumo = (distanza["value"]/1000) / consumi["rolls-royce"]["benzina"]["rolls-royce phantom drophead"][6.8][0]
-
-p 'per andare da '+partenza+' a '+destinazione+' si consumano '+consumo.to_s+' litri di benzina'
+partenza = partenza[ 1 .. - 1 ]
+destinazione = ARGV[ ARGV.rindex( "/" ) + 1 .. -1 ].join(" ")
+def getConsumoPerDistanza(macchina, partenza, destinazione)
+	consumi = getConsumo
+	kmPerUnita, tipoCarburante = cercaConsumo(macchina, consumi)
+	distanza = getDistanza(partenza,destinazione)
+	unless macchina.split[ - 1 ].downcase == "metano-benzina" or macchina.split[ - 1 ] == "gpl-benzina"
+	  consumo = (distanza["value"]/1000) / kmPerUnita
+	  p "Per andare da '#{partenza}' a '#{destinazione}' con una '#{macchina}' si consumano #{consumo} litri di #{tipoCarburante}"
+	else
+	  consumo_benzina = (distanza["value"]/1000) / kmPerUnita[0]
+	  consumo_altroCarburante = (distanza["value"]/1000) / kmPerUnita[1]
+	  p "Per andare da '#{partenza}' a '#{destinazione}' con una '#{macchina}' si consumano #{consumo_benzina} litri di #{tipoCarburante.split("-")[1]}"
+	  if tipoCarburante.split("-")[0] == "metano"
+	    p "Per andare da '#{partenza}' a '#{destinazione}' con una '#{macchina}' si consumano #{consumo_altroCarburante} metri cubi di metano"
+	  else
+	    p "Per andare da '#{partenza}' a '#{destinazione}' con una '#{macchina}' si consumano #{consumo_benzina} litri di #{tipoCarburante.split("-")[0]}"
+	  end
+	end
+end

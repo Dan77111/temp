@@ -37,8 +37,10 @@ def getTipiCarburante( macchine )
     source = Net::HTTP.get( 'www.ilsole24ore.com', '/speciali/emissioni_auto/emissioni_auto_emissioni_tipologia_' + marca + "_benzina.shtml") unless marca == "iveco" or marca == "mahindra"
     source = Net::HTTP.get( 'www.ilsole24ore.com', '/speciali/emissioni_auto/emissioni_auto_emissioni_tipologia_' + marca + "_gasolio.shtml") if marca == "iveco" or marca == "mahindra"
     #Taglia la parte iniziale del file che non serve
+
     source = source[ source.index( "selectedLabel" ) + 16 .. -1 ]
     #Trova i tipi di carburante e li aggiunge
+
     loop do
       #Trova il tipo di carburante
       tipoCarburante = source[ source.index( ">" ) + 1 .. source.index( "<" ) - 1 ].downcase
@@ -49,10 +51,13 @@ def getTipiCarburante( macchine )
       #aggiunge all'hash
       tipiCarburante[ tipoCarburante ] = {}
       #esce se è l'ultimo
+
       break if source.index( "<a" ) > source.index( "</div>" )
       #se non è l'ultima taglia il pezzo già usato
       source = source[ source.index( "<a" ) + 1 .. - 1 ]
+
     end
+
   end
   return macchine
 end
@@ -82,6 +87,7 @@ def getModelli( macchine )
         #Alcune macchine hanno 2 spazi e non va bene
         modello = modello.sub( /  /, " " )
         modello = modello[ 0 .. - 3 ] if modello.end_with?(" *")
+        modello.slice!("\'")
         #taglia il pezzo di stringa relativo al modello per mettere la cilindrata all'inizio
         source = source[ source.index( "text-align:right;\">" ) + 19 .. - 1 ]
         #prende la cilindrata e la approssima per eccesso a una cifra decimale: 1.723 diventa 1.8
@@ -110,17 +116,17 @@ def getModelli( macchine )
             else
               #altrimenti vengono sommati i consumi e viene incrementato il contatore
               consumo_benzinaOld = modelli[ modello ][ cilindrata ][ 0 ][ 0 ]
-              consumo_benzinaNew = consumo[ 0 .. consumo.index( "/" ) - 2 ].to_f
+              consumo_benzinaNew = consumo.split("/")[0].to_f
               consumo_benzina = consumo_benzinaNew + consumo_benzinaOld
               consumo_altroCarburanteOld = modelli[ modello ][ cilindrata ][ 0 ][ 0 ]
-              consumo_altroCarburanteNew = consumo[ consumo.index( "/" ) + 2 .. - 1 ].to_f
+              consumo_altroCarburanteNew = consumo.split("/")[1].to_f
               consumo_altroCarburante = consumo_altroCarburanteOld + consumo_altroCarburanteNew
               modelli[ modello ][ cilindrata ] = [ [ consumo_benzina , consumo_altroCarburante ], modelli[ modello ][ cilindrata ][ 1 ] + 1 ]
             end
           else
             #se non è già presente una macchina dello stesso modello viene creata
-            consumo_benzina = consumo[ 0 .. consumo.index( "/" ) - 1 ].strip.to_f
-            consumo_altroCarburante = consumo[ consumo.index( "/" ) + 1 .. - 1 ].strip.to_f
+            consumo_benzina = consumo.split("/")[0].to_f
+            consumo_altroCarburante = consumo.split("/")[1].to_f
             modelli[ modello ] = { cilindrata => [ [ consumo_benzina, consumo_altroCarburante ], 1 ] }
           end
         else
@@ -144,32 +150,28 @@ def getModelli( macchine )
       if tipoCarburante == 'metano-benzina' or tipoCarburante == 'gpl-benzina'
         modelli.each do |modello, datiModello|
           datiModello.each do |cilindrata, dati|
-            dati[ 0 ][ 0 ] = ( 100 / ( dati[ 0 ][ 0 ] / dati[ 1 ] ) ).round(1)
-            dati[ 0 ][ 1 ] = ( 100 / ( dati[ 0 ][ 0 ] / dati[ 1 ] ) ).round(1)
+            temp = ( 100 / ( dati[ 0 ][ 0 ] / dati[ 1 ] ) )
+            dati[ 1 ] = ( 100 / ( dati[ 0 ][ 1 ] / dati[ 1 ] ) )
+            dati[ 0 ] = temp
           end
         end
       else
         modelli.each do |modello, datiModello|
           datiModello.each do |cilindrata, dati|
-            dati[ 0 ] = ( 100 / ( dati[ 0 ] / dati[ 1 ] ) ).round(1)
+            datiModello[ cilindrata ] = ( 100 / ( dati[ 0 ] / dati[ 1 ] ) )
           end
         end
       end
     end
   end
+  p macchine
 end
 
 
 def printConsumo()
-  File.open('consumi.yaml', 'w') { |fo| fo.puts getModelli( Hash.new ).to_yaml }
-end
-def getConsumo()
-  return getModelli(Hash.new)
+  File.open('consumi.yml', 'w') { |fo| fo.puts getModelli( Hash.new ).to_yaml }
 end
 
 if __FILE__ == $0
-  t1 = Time.now
   printConsumo
-  t2 = Time.now
-  puts delta = t2 - t1
 end
