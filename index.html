@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+  <title>
+    Prova
+  </title>
+</head>
+<body>
+  <div id="text" style="border-style: solid; border-radius: 20px; padding: 20px; display: inline-block;">
+  </div>
+  <script>
+    var text = "ciao io sono un testo | ciao io sono la seconda parte del testo |ciao io sono la terza parte del testo";
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    async function demo(i) {
+      await sleep(50);
+      if ( text.charAt(i) == "|" ){
+        document.getElementById("text").style.background = "cyan";
+        await sleep(200);
+        document.getElementById("text").innerHTML = " ";
+        document.getElementById("text").style.background = "white";
+        demo(i+1)
+      } else {
+        document.getElementById("text").innerHTML = document.getElementById("text").innerHTML + text.charAt(i);
+        if ( i < text.length ){
+          demo(i+1);
+        }
+      }
+    }
+    demo(0);
+  </script>
+</body>
