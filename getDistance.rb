@@ -3,9 +3,6 @@ require "net/http"
 require "uri"
 require 'json'
 
-#Gli indirizzi
-source = "Piazza Municipio 11 Pergine Valsugana TN Trento 38057 Italia"
-destination = "Via Sommarive 11 Povo TN Trento Italia"
 def getDistanza(source, destination)
   #fai la richiesta
   uri = URI.parse("https://maps.googleapis.com/maps/api/distancematrix/json?origins="+source+"&destinations="+destination+"&language=it-IT&key=AIzaSyCvVPw6LzY6DBy0V5eWB6w1LI5k_CiML7A")
