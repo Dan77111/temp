@@ -169,7 +169,7 @@ end
 
 
 def printConsumo()
-  File.open('consumi.yml', 'w') { |fo| fo.puts getModelli( Hash.new ).to_yaml }
+  File.open('consumi.yml', 'w') { |a| a.puts getModelli( Hash.new ).to_yaml }
 end
 
 if __FILE__ == $0
