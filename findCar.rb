@@ -26,5 +26,5 @@ def cercaConsumo(nome, dati)
   cilindrata = nome[ - 3 .. - 1 ].to_f
   nome = nome[ 0 .. - 4 ].strip
   modello = nome
-  return dati[ marca ][ tipoCarburante ][ marca.sub( /_/, " " ) + " " + modello ][ cilindrata ][ 0 ], tipoCarburante
+  return dati[ marca ][ tipoCarburante ][ marca.sub( /_/, " " ) + " " + modello ][ cilindrata ], tipoCarburante
 end
